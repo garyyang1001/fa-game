@@ -1,21 +1,34 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const { signInWithGoogle } = useAuth();
+  const { toast } = useToast();
 
   const handleGoogleRegister = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/create" });
-    } catch (error) {
+      await signInWithGoogle();
+      toast({
+        title: "註冊成功",
+        description: "歡迎加入 FA-Game！",
+      });
+    } catch (error: any) {
       console.error("Registration error:", error);
+      toast({
+        title: "註冊失敗",
+        description: error.message || "請稍後再試",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
     }
   };
