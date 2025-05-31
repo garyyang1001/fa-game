@@ -10,6 +10,8 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# 複製 Prisma schema 檔案以支援 postinstall 腳本
+COPY prisma ./prisma
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
@@ -32,7 +34,7 @@ COPY . .
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 # 移除硬編碼的 PRISMA_QUERY_ENGINE_LIBRARY，讓 Prisma 自動選擇
-# Generate Prisma Client
+# Generate Prisma Client (已經在 postinstall 中執行，這裡確保再次生成)
 RUN npx prisma generate
 
 RUN npm run build
