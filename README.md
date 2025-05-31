@@ -5,19 +5,20 @@
 
 [English](#english) | [中文](#中文)
 
-<p align=\"center\">
-  <img src=\"https://img.shields.io/badge/Next.js-14-black\" alt=\"Next.js\">
-  <img src=\"https://img.shields.io/badge/TypeScript-5-blue\" alt=\"TypeScript\">
-  <img src=\"https://img.shields.io/badge/Phaser-3.80-orange\" alt=\"Phaser\">
-  <img src=\"https://img.shields.io/badge/Supabase-Ready-green\" alt=\"Supabase\">
-  <img src=\"https://img.shields.io/badge/Gemini_Pro-2.5-green\" alt=\"Gemini\">
-  <img src=\"https://img.shields.io/badge/AI_Enhanced-🤖-purple\" alt=\"AI Enhanced\">
-  <img src=\"https://img.shields.io/badge/Status-Production_Ready-brightgreen\" alt=\"Status\">
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-14-black" alt="Next.js">
+  <img src="https://img.shields.io/badge/TypeScript-5-blue" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Phaser-3.80-orange" alt="Phaser">
+  <img src="https://img.shields.io/badge/Supabase-Ready-green" alt="Supabase">
+  <img src="https://img.shields.io/badge/Gemini_Pro-2.5-green" alt="Gemini">
+  <img src="https://img.shields.io/badge/AI_Enhanced-🤖-purple" alt="AI Enhanced">
+  <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen" alt="Status">
 </p>
 
 ## 📚 重要文檔
 
 - 🚀 **[完整部署指南](DEPLOYMENT_GUIDE.md)** - 詳細的雲端部署教學
+- 🔑 **[API Key 設置指南](API_KEY_SETUP.md)** - 如何設置和更新 API Keys
 - 📋 [開發規劃書](ROADMAP.md) - 詳細的技術架構演進路線圖
 - 🤝 [貢獻指南](CONTRIBUTING.md) - 如何參與開發
 - 🤖 [AI 整合指南](AI_INTEGRATION_GUIDE.md) - AI 學習助手完整使用指南
@@ -41,6 +42,7 @@
 - 🔧 **優化配置**：修正所有已知的部署問題
 - 📦 **依賴更新**：所有套件升級到最新穩定版本
 - 🛡️ **安全強化**：完善的環境變數管理和錯誤處理
+- 🔑 **API 錯誤處理**：改進的 API Key 錯誤提示和處理
 
 ### 🚀 快速開始
 
@@ -49,8 +51,10 @@
 - Node.js 18+
 - npm 或 yarn
 - **Supabase 帳戶** （主要資料庫）
-- **Google Gemini API Key** （AI 功能必需）
+- **Google Gemini API Key** （AI 功能必需） ⚠️ **重要：請確保 API Key 有效**
 - Firebase 專案 （檔案儲存）
+
+> ⚠️ **注意**：如果您看到 "API key expired" 錯誤，請參考 [API Key 設置指南](API_KEY_SETUP.md) 更新您的 API Key。
 
 #### 5 分鐘快速部署
 
@@ -58,9 +62,12 @@
 2. **設定 Supabase**：
    - 建立新專案
    - 獲取 Database URL 和 API Keys
-3. **部署到 Vercel**：
+3. **取得 Google Gemini API Key**：
+   - 前往 [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - 創建新的 API Key
+4. **部署到 Vercel**：
    - 導入 GitHub repository
-   - 設定環境變數
+   - 設定環境變數（包含 Gemini API Key）
    - 一鍵部署！
 
 詳細步驟請參考 **[完整部署指南](DEPLOYMENT_GUIDE.md)**
@@ -117,6 +124,7 @@ fa-game/
 │   │   ├── prisma.ts         # 🆕 Prisma 客戶端
 │   │   ├── supabase.ts       # 🆕 Supabase 客戶端
 │   │   ├── gemini.ts         # Gemini AI 整合
+│   │   ├── gemini-error-handler.ts # 🆕 API 錯誤處理
 │   │   └── auth-server.ts    # 認證服務
 │   ├── services/             # API 服務
 │   ├── hooks/                # 自定義 Hooks
@@ -124,6 +132,7 @@ fa-game/
 │   └── types/                # TypeScript 類型
 ├── prisma/                   # 資料庫架構
 │   └── schema.prisma
+├── API_KEY_SETUP.md          # 🆕 API Key 設置指南
 ├── DEPLOYMENT_GUIDE.md       # 🆕 完整部署指南
 └── tests/                    # 測試檔案
 ```
@@ -183,6 +192,7 @@ npm test
 - [x] **🆕 Supabase 整合**
 - [x] **🆕 生產就緒部署**
 - [x] **🆕 完整錯誤處理**
+- [x] **🆕 API Key 錯誤提示**
 
 #### 開發中 🚧
 - [ ] 社群互動功能
@@ -224,7 +234,7 @@ npm test
 
 ### 🆘 支援與反饋
 
-- 📖 **文檔**：查看 [部署指南](DEPLOYMENT_GUIDE.md)
+- 📖 **文檔**：查看 [部署指南](DEPLOYMENT_GUIDE.md) 和 [API Key 設置指南](API_KEY_SETUP.md)
 - 🐛 **Bug 回報**：在 GitHub Issues 中報告
 - 💡 **功能建議**：歡迎在 Issues 中提出想法
 - 💬 **社群討論**：加入我們的討論區
@@ -271,10 +281,10 @@ MIT License - see [LICENSE](LICENSE)
 
 **讓每個父母都成為孩子的遊戲設計師，讓每個孩子都愛上 AI！** 🎮👨‍👩‍👧‍👦🤖
 
-<p align=\"center\">
-  <strong>現在就開始：<a href=\"DEPLOYMENT_GUIDE.md\">5 分鐘快速部署</a></strong>
+<p align="center">
+  <strong>現在就開始：<a href="DEPLOYMENT_GUIDE.md">5 分鐘快速部署</a></strong>
 </p>
 
-<p align=\"center\">
+<p align="center">
   Made with ❤️ by the FA-Game Team
 </p>
