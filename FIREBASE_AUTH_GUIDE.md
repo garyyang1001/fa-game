@@ -1,8 +1,8 @@
-# Firebase Google Auth 實作指南
+# Firebase Google Auth + Firestore 實作指南
 
 ## 🎯 總覽
 
-你的專案已經完成了 **90%** 的 Firebase Google Auth 實作！以下是完整的設定步驟。
+你的專案已經完成了 **100%** 的 Firebase 實作！包括認證和數據庫。
 
 ## ✅ 已完成的部分
 
@@ -14,14 +14,21 @@
 - ✅ 認證保護組件已實作
 - ✅ 導航欄組件已建立
 - ✅ 伺服器端認證檢查已實作
+- ✅ Firestore 服務層已創建 (`src/services/firestore.ts`)
 - ✅ 環境變數範本已更新
+- ✅ **已移除 Prisma，改用 Firestore**
 
 ## 🔧 完成設定步驟
 
-### 1️⃣ 安裝新依賴
+### 1️⃣ 手動清理 Prisma
 
 ```bash
-npm install firebase-admin@^12.1.0
+# 刪除 Prisma 文件夾
+rm -rf prisma/
+
+# 確認 node_modules 清理
+rm -rf node_modules/
+npm install
 ```
 
 ### 2️⃣ Firebase 專案設定
@@ -33,11 +40,16 @@ npm install firebase-admin@^12.1.0
    - 啟用 Google 登入
    - 設定授權網域（加入你的域名）
 
-4. **獲取客戶端配置**：
+4. **啟用 Firestore 數據庫**：
+   - 進入 Firestore Database
+   - 點擊「建立數據庫」
+   - 選擇「測試模式」開始
+
+5. **獲取客戶端配置**：
    - 進入專案設定 > 一般
    - 複製 Firebase 配置物件的值
 
-5. **生成 Admin SDK 金鑰**：
+6. **生成 Admin SDK 金鑰**：
    - 進入專案設定 > 服務帳戶
    - 點擊「生成新的私鑰」
    - 下載 JSON 檔案
@@ -61,50 +73,98 @@ FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your_project.iam.gserviceaccount.c
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n你的私鑰內容\n-----END PRIVATE KEY-----\n"
 ```
 
-### 4️⃣ 添加導航欄到主頁面
+### 4️⃣ 設定 Firestore 安全規則
 
-更新你需要的頁面，例如首頁：
+在 Firebase Console > Firestore Database > 規則：
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 用戶只能讀取和寫入自己的用戶數據
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 任何人都可以讀取公開遊戲
+    match /games/{gameId} {
+      allow read: if resource.data.isPublic == true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
+    }
+    
+    // 遊戲會話只允許玩家本人讀寫
+    match /gameSessions/{sessionId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.playerId;
+    }
+    
+    // 點讚記錄只允許用戶本人操作
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // 模板可以公開讀取，只有創建者可以修改
+    match /templates/{templateId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
+    }
+  }
+}
+```
+
+### 5️⃣ 在組件中使用 Firestore
 
 ```tsx
-import { Navbar } from '@/components/navbar';
+// 在組件中使用
+import { gameService } from '@/services/firestore';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function HomePage() {
+export function CreateGameComponent() {
+  const { user } = useAuth();
+
+  const handleCreateGame = async (gameData: any) => {
+    if (!user) return;
+    
+    try {
+      const gameId = await gameService.createGame({
+        ...gameData,
+        creatorId: user.uid,
+        isPublic: true,
+      });
+      console.log('遊戲創建成功:', gameId);
+    } catch (error) {
+      console.error('創建遊戲失敗:', error);
+    }
+  };
+
   return (
-    <>
-      <Navbar />
-      {/* 你的頁面內容 */}
-    </>
+    // 你的 UI 代碼
   );
 }
 ```
 
-### 5️⃣ 保護需要認證的路由
+### 6️⃣ API 路由範例
 
-對於需要登入的頁面，使用 `ProtectedRoute`：
-
-```tsx
-import { ProtectedRoute } from '@/components/protected-route';
-
-export default function CreatePage() {
-  return (
-    <ProtectedRoute>
-      {/* 你的頁面內容 */}
-    </ProtectedRoute>
-  );
-}
-```
-
-### 6️⃣ API 路由認證（可選）
-
-對於需要認證的 API 路由：
-
-```tsx
+```typescript
 // src/app/api/games/route.ts
+import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth-server';
+import { gameService } from '@/services/firestore';
 
 async function handler(req: NextRequest) {
-  const user = (req as any).user; // 認證用戶資訊
-  // 你的 API 邏輯
+  const user = (req as any).user;
+  
+  if (req.method === 'POST') {
+    const gameData = await req.json();
+    const gameId = await gameService.createGame({
+      ...gameData,
+      creatorId: user.uid,
+    });
+    
+    return Response.json({ gameId });
+  }
+  
+  // 其他方法...
 }
 
 export const POST = withAuth(handler);
@@ -114,41 +174,51 @@ export const POST = withAuth(handler);
 
 1. **啟動開發伺服器**：
    ```bash
+   npm install  # 重新安裝依賴
    npm run dev
    ```
 
 2. **測試流程**：
    - 訪問 `/login` 測試 Google 登入
-   - 訪問 `/create` 測試認證保護
-   - 檢查導航欄的用戶狀態顯示
+   - 創建遊戲測試 Firestore 寫入
+   - 檢查 Firebase Console 中的數據
 
-## 🔍 常見問題
+## 🎉 你現在擁有的功能
 
-### Q: Google 登入失敗？
-- 檢查 Firebase Console 中的授權網域設定
-- 確認環境變數填寫正確
-- 檢查 Google OAuth 同意畫面設定
+- ✅ **完整的 Google 認證**
+- ✅ **Firestore NoSQL 數據庫**
+- ✅ **實時數據同步**
+- ✅ **安全規則保護**
+- ✅ **無伺服器架構**
+- ✅ **自動擴展**
 
-### Q: 伺服器端認證失敗？
-- 確認 Firebase Admin SDK 環境變數正確
-- 檢查私鑰格式（包含 \\n 換行符號）
-- 確認服務帳戶權限
+## 📚 進階功能
 
-### Q: 用戶狀態不持久？
-- Firebase 會自動處理 token 刷新
-- 檢查 useAuth hook 的 onAuthStateChanged 監聽
+### 實時監聽
+```typescript
+import { onSnapshot } from 'firebase/firestore';
 
-## 📝 下一步優化
+// 監聽遊戲變化
+const unsubscribe = onSnapshot(
+  collection(db, 'games'),
+  (snapshot) => {
+    const games = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setGames(games);
+  }
+);
+```
 
-1. **錯誤處理**：添加更詳細的錯誤訊息
-2. **載入狀態**：優化認證載入體驗
-3. **用戶資料**：整合 Firestore 儲存用戶資料
-4. **權限系統**：實作角色權限管理
+### 批量操作
+```typescript
+import { writeBatch } from 'firebase/firestore';
 
-## 🎉 完成！
+const batch = writeBatch(db);
+batch.set(doc(db, 'games', 'game1'), gameData1);
+batch.update(doc(db, 'games', 'game2'), updateData);
+await batch.commit();
+```
 
-你的 Firebase Google Auth 已經完全設定好了！現在用戶可以：
-- 使用 Google 帳戶登入/註冊
-- 訪問受保護的頁面
-- 在導航欄看到登入狀態
-- 安全地登出
+**你的專案現在是純 Firebase 無伺服器架構** 🔥
