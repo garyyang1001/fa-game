@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { handleGeminiError, checkApiKeyConfig } from "./gemini-error-handler";
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
+// 檢查 API key 配置
+if (!checkApiKeyConfig()) {
+  console.warn("Gemini API key is not properly configured");
+}
+
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
 
 export interface GameCreationPrompt {
   voiceInput: string;
@@ -20,6 +26,11 @@ export interface GameData {
 export async function createGameFromVoice(
   prompt: GameCreationPrompt
 ): Promise<GameData> {
+  // 檢查 API key
+  if (!checkApiKeyConfig()) {
+    throw handleGeminiError(new Error("API key is not configured"));
+  }
+
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   const systemPrompt = `
@@ -59,11 +70,16 @@ export async function createGameFromVoice(
     throw new Error("Failed to parse game data");
   } catch (error) {
     console.error("Error creating game:", error);
-    throw error;
+    throw handleGeminiError(error);
   }
 }
 
 export async function generateGameAssets(gameData: GameData) {
+  // 檢查 API key
+  if (!checkApiKeyConfig()) {
+    throw handleGeminiError(new Error("API key is not configured"));
+  }
+
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
   
   const prompt = `
@@ -87,6 +103,6 @@ export async function generateGameAssets(gameData: GameData) {
     return response.text();
   } catch (error) {
     console.error("Error generating assets:", error);
-    throw error;
+    throw handleGeminiError(error);
   }
 }
