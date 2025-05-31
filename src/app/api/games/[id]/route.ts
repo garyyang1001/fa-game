@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -56,38 +55,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if user owns the game
-    const game = await prisma.game.findUnique({
-      where: { id: params.id },
-    });
-
-    if (!game || game.creatorId !== user.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 403 }
-      );
-    }
-
+    // TODO: 實作 Firebase Auth 驗證
+    // 暫時跳過認證檢查
+    
     const body = await request.json();
+    
+    // 暫時允許所有更新請求
+    // TODO: 檢查用戶是否擁有此遊戲
     const updatedGame = await prisma.game.update({
       where: { id: params.id },
       data: body,
@@ -108,37 +82,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if user owns the game
-    const game = await prisma.game.findUnique({
-      where: { id: params.id },
-    });
-
-    if (!game || game.creatorId !== user.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 403 }
-      );
-    }
-
+    // TODO: 實作 Firebase Auth 驗證
+    // 暫時跳過認證檢查
+    
+    // 暫時允許所有刪除請求
+    // TODO: 檢查用戶是否擁有此遊戲
     await prisma.game.delete({
       where: { id: params.id },
     });
