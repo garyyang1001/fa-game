@@ -6,6 +6,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -111,7 +112,7 @@ export class GameService {
       
       if (likeDoc.exists()) {
         // Unlike
-        await likeRef.delete();
+        await deleteDoc(likeRef);
         await this.updateLikeCount(gameId, -1);
         return false;
       } else {
