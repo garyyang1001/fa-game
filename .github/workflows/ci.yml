@@ -21,10 +21,21 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        # Remove cache configuration to avoid lockfile requirement
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        elif [ -f yarn.lock ]; then
+          yarn install --frozen-lockfile
+        elif [ -f pnpm-lock.yaml ]; then
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+        else
+          echo "No lockfile found. Using npm install..."
+          npm install
+        fi
     
     - name: Run linter
       run: npm run lint
