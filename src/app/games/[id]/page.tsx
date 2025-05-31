@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { MatchingGameScene, defaultMatchingConfig } from "@/game-templates/matching-game";
 import { SortingGameScene, defaultSortingConfig } from "@/game-templates/sorting-game";
 import { Button } from "@/components/ui/button";
