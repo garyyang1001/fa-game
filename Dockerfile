@@ -4,8 +4,8 @@ FROM node:18-alpine AS base
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
-# 安裝 OpenSSL 1.1.x 以支援 Prisma
-RUN apk add --no-cache openssl1.1-compat
+# 安裝 OpenSSL 和其他必要的依賴
+RUN apk add --no-cache openssl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -22,7 +22,7 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 # 同樣在 builder 階段安裝 OpenSSL
-RUN apk add --no-cache openssl1.1-compat
+RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -30,6 +30,9 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
+
+# 設定 Prisma 使用相容的二進制檔案
+ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -45,7 +48,10 @@ ENV NODE_ENV production
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 # 在 runner 階段也需要安裝 OpenSSL
-RUN apk add --no-cache openssl1.1-compat
+RUN apk add --no-cache openssl
+
+# 設定 Prisma 使用相容的二進制檔案
+ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
