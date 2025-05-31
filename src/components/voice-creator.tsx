@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Mic, MicOff, Loader2, Wand2 } from "lucide-react";
+import { Mic, MicOff, Loader2, Wand2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { createGameFromVoice, GameData } from "@/lib/gemini";
+import { GeminiError } from "@/lib/gemini-error-handler";
 
 interface VoiceCreatorProps {
   onGameCreated: (gameData: GameData) => void;
@@ -14,6 +15,7 @@ export function VoiceCreator({ onGameCreated }: VoiceCreatorProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [apiError, setApiError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -85,6 +87,7 @@ export function VoiceCreator({ onGameCreated }: VoiceCreatorProps) {
     }
 
     setIsProcessing(true);
+    setApiError(null);
     
     try {
       const gameData = await createGameFromVoice({
@@ -103,11 +106,30 @@ export function VoiceCreator({ onGameCreated }: VoiceCreatorProps) {
       setInputText("");
     } catch (error) {
       console.error("Error processing input:", error);
-      toast({
-        title: "處理失敗",
-        description: "無法創建遊戲，請再試一次",
-        variant: "destructive",
-      });
+      
+      // 處理特定的 API 錯誤
+      if (error instanceof GeminiError) {
+        if (error.isApiKeyError) {
+          setApiError(error.message);
+          toast({
+            title: "API 金鑰錯誤",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "處理失敗",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "處理失敗",
+          description: "無法創建遊戲，請再試一次",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -115,6 +137,28 @@ export function VoiceCreator({ onGameCreated }: VoiceCreatorProps) {
 
   return (
     <div className="w-full space-y-4">
+      {/* API 錯誤提示 */}
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-red-800">{apiError}</p>
+            <p className="text-xs text-red-600 mt-1">
+              請聯絡系統管理員更新 API 金鑰，或查看
+              <a
+                href="https://github.com/garyyang1001/fa-game#api-key-setup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-medium mx-1"
+              >
+                設定指南
+              </a>
+              了解詳情。
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* 文字輸入區域 */}
       <div className="relative">
         <textarea
