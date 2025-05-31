@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { AILearningAssistant } from '@/services/ai-assistant';
 
 export interface MatchingGameConfig {
   pairs: Array<{
@@ -8,6 +9,13 @@ export interface MatchingGameConfig {
   }>;
   theme: string;
   encouragements: string[];
+  // AI 增強功能（可選）
+  aiEnhanced?: {
+    enabled: boolean;
+    adaptiveDifficulty?: boolean;
+    smartHints?: boolean;
+    personalizedEncouragement?: boolean;
+  };
 }
 
 export class MatchingGameScene extends Phaser.Scene {
@@ -16,10 +24,30 @@ export class MatchingGameScene extends Phaser.Scene {
   private selectedCards: Phaser.GameObjects.Container[] = [];
   private matchedPairs: number = 0;
   private moves: number = 0;
+  private mistakes: string[] = [];
+  
+  // AI 增強功能
+  private aiAssistant?: AILearningAssistant;
+  private aiConfig?: MatchingGameConfig['aiEnhanced'];
 
   constructor(config: MatchingGameConfig) {
     super({ key: 'MatchingGame' });
     this.config = config;
+    
+    // 初始化AI功能（如果啟用）
+    this.aiConfig = config.aiEnhanced;
+    if (this.aiConfig?.enabled) {
+      this.aiAssistant = new AILearningAssistant({
+        enabled: true,
+        features: {
+          smartHints: this.aiConfig.smartHints || false,
+          adaptiveDifficulty: this.aiConfig.adaptiveDifficulty || false,
+          progressAnalysis: false,
+          contentGeneration: false
+        },
+        personality: 'encouraging'
+      });
+    }
   }
 
   preload() {
@@ -46,6 +74,11 @@ export class MatchingGameScene extends Phaser.Scene {
       fontFamily: 'Arial',
       color: '#6b7280',
     });
+
+    // AI增強：添加提示按鈕（如果啟用）
+    if (this.aiConfig?.enabled && this.aiConfig?.smartHints) {
+      this.createAIHintButton();
+    }
   }
 
   createCards() {
@@ -113,6 +146,66 @@ export class MatchingGameScene extends Phaser.Scene {
     return container;
   }
 
+  // AI增強：創建提示按鈕
+  createAIHintButton() {
+    const hintButton = this.add.text(this.scale.width - 120, 20, '💡 AI提示', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#ffffff',
+      backgroundColor: '#3b82f6',
+      padding: { x: 10, y: 6 },
+    }).setOrigin(0.5).setInteractive();
+
+    hintButton.on('pointerdown', () => this.requestAIHint());
+    hintButton.on('pointerover', () => {
+      hintButton.setStyle({ backgroundColor: '#1d4ed8' });
+    });
+    hintButton.on('pointerout', () => {
+      hintButton.setStyle({ backgroundColor: '#3b82f6' });
+    });
+  }
+
+  // AI增強：請求智能提示
+  async requestAIHint() {
+    if (!this.aiAssistant) return;
+
+    try {
+      const hint = await this.aiAssistant.generateHint({
+        gameType: 'matching',
+        difficulty: 1,
+        currentProgress: {
+          matchedPairs: this.matchedPairs,
+          totalPairs: this.config.pairs.length,
+          moves: this.moves
+        },
+        mistakeHistory: this.mistakes
+      });
+
+      if (hint) {
+        this.showAIHint(hint.content);
+      }
+    } catch (error) {
+      console.error('Failed to get AI hint:', error);
+    }
+  }
+
+  // AI增強：顯示AI提示
+  showAIHint(hintText: string) {
+    const hintDisplay = this.add.text(this.scale.width / 2, 80, hintText, {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      color: '#1e40af',
+      backgroundColor: '#dbeafe',
+      padding: { x: 15, y: 8 },
+      wordWrap: { width: 400 }
+    }).setOrigin(0.5);
+
+    // 自動消失
+    this.time.delayedCall(4000, () => {
+      hintDisplay.destroy();
+    });
+  }
+
   onCardClick(card: Phaser.GameObjects.Container) {
     if (card.getData('isFlipped') || card.getData('isMatched')) {
       return;
@@ -127,6 +220,7 @@ export class MatchingGameScene extends Phaser.Scene {
     
     if (this.selectedCards.length === 2) {
       this.moves++;
+      this.updateMovesDisplay();
       this.checkMatch();
     }
   }
@@ -162,7 +256,7 @@ export class MatchingGameScene extends Phaser.Scene {
       card1.setData('isMatched', true);
       card2.setData('isMatched', true);
       
-      // Show encouragement
+      // Show encouragement (AI增強或預設)
       this.showEncouragement();
       
       // Add match animation
@@ -186,6 +280,9 @@ export class MatchingGameScene extends Phaser.Scene {
         this.showWinMessage();
       }
     } else {
+      // No match - 記錄錯誤用於AI分析
+      this.mistakes.push(`${data1.content}-${data2.content}`);
+      
       // No match
       this.time.delayedCall(1000, () => {
         this.flipCard(card1, false);
@@ -195,8 +292,32 @@ export class MatchingGameScene extends Phaser.Scene {
     }
   }
 
-  showEncouragement() {
-    const encouragement = Phaser.Utils.Array.GetRandom(this.config.encouragements);
+  async showEncouragement() {
+    let encouragement: string;
+
+    // AI增強：使用AI生成個人化鼓勵
+    if (this.aiConfig?.enabled && this.aiConfig?.personalizedEncouragement && this.aiAssistant) {
+      try {
+        const aiResponse = await this.aiAssistant.generateEncouragement({
+          gameType: 'matching',
+          difficulty: 1,
+          currentProgress: {
+            matchedPairs: this.matchedPairs,
+            totalPairs: this.config.pairs.length
+          },
+          mistakeHistory: this.mistakes
+        });
+        
+        encouragement = aiResponse?.content || Phaser.Utils.Array.GetRandom(this.config.encouragements);
+      } catch {
+        // 如果AI失敗，回退到預設鼓勵語
+        encouragement = Phaser.Utils.Array.GetRandom(this.config.encouragements);
+      }
+    } else {
+      // 使用預設鼓勵語
+      encouragement = Phaser.Utils.Array.GetRandom(this.config.encouragements);
+    }
+
     const text = this.add.text(this.scale.width / 2, this.scale.height / 2, encouragement, {
       fontSize: '40px',
       fontFamily: 'Arial',
@@ -212,6 +333,18 @@ export class MatchingGameScene extends Phaser.Scene {
       duration: 1500,
       onComplete: () => text.destroy()
     });
+  }
+
+  updateMovesDisplay() {
+    // 更新移動次數顯示
+    const movesText = this.children.list.find(
+      child => child instanceof Phaser.GameObjects.Text && 
+      child.text.includes('移動次數:')
+    ) as Phaser.GameObjects.Text;
+    
+    if (movesText) {
+      movesText.setText(`移動次數: ${this.moves}`);
+    }
   }
 
   showWinMessage() {
@@ -250,7 +383,7 @@ export class MatchingGameScene extends Phaser.Scene {
   }
 }
 
-// Default configuration
+// Default configuration（保持向後兼容）
 export const defaultMatchingConfig: MatchingGameConfig = {
   pairs: [
     { id: '1', content: '🐶', match: '🐶' },
@@ -260,4 +393,11 @@ export const defaultMatchingConfig: MatchingGameConfig = {
   ],
   theme: 'animals',
   encouragements: ['太棒了！', '繼續加油！', '真聪明！', '很好！'],
+  // AI功能預設關閉，保持向後兼容
+  aiEnhanced: {
+    enabled: false,
+    adaptiveDifficulty: false,
+    smartHints: false,
+    personalizedEncouragement: false
+  }
 };
