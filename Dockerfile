@@ -4,14 +4,10 @@ FROM node:18-alpine AS base
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
-# 安裝 OpenSSL 和其他必要的依賴
-RUN apk add --no-cache openssl openssl-dev
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-# 複製 Prisma schema 檔案以支援 postinstall 腳本
-COPY prisma ./prisma
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
@@ -23,8 +19,6 @@ RUN \
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-# 同樣在 builder 階段安裝 OpenSSL
-RUN apk add --no-cache openssl openssl-dev
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -32,10 +26,6 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
-
-# 移除硬編碼的 PRISMA_QUERY_ENGINE_LIBRARY，讓 Prisma 自動選擇
-# Generate Prisma Client (已經在 postinstall 中執行，這裡確保再次生成)
-RUN npx prisma generate
 
 RUN npm run build
 
@@ -46,9 +36,6 @@ WORKDIR /app
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
-
-# 在 runner 階段也需要安裝 OpenSSL
-RUN apk add --no-cache openssl
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -63,10 +50,6 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# 複製 Prisma 相關檔案
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 
