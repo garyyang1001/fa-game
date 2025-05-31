@@ -9,7 +9,14 @@
   <img src="https://img.shields.io/badge/TypeScript-5-blue" alt="TypeScript">
   <img src="https://img.shields.io/badge/Phaser-3.80-orange" alt="Phaser">
   <img src="https://img.shields.io/badge/Gemini_Pro-2.5-green" alt="Gemini">
+  <img src="https://img.shields.io/badge/Status-Beta-yellow" alt="Status">
 </p>
+
+## 📚 重要文檔
+
+- 📋 [開發規劃書](ROADMAP.md) - 詳細的技術架構演進路線圖
+- 🚀 [快速設置指南](SETUP.md) - 5分鐘內啟動專案
+- 🤝 [貢獻指南](CONTRIBUTING.md) - 如何參與開發
 
 ## 中文
 
@@ -21,6 +28,18 @@
 - 👥 **社群分享**：與其他父母交流創意
 - 💰 **創意變現**：優質模板可以販售
 - 🎮 **多種遊戲模板**：配對、排序、故事、繪畫等
+
+### 💡 最新更新
+
+- ✨ **改進的語音輸入 UI**：文字輸入框 + 麥克風按鈕的直觀設計
+- 📱 **響應式設計**：完美支援手機和平板
+- 🚀 **Phase 1 MVP**：基礎功能已完成，正在收集用戶反饋
+
+### 🎯 使用場景
+
+1. **家長**：為孩子快速創建個性化教育遊戲
+2. **教師**：製作符合課程的互動教材
+3. **內容創作者**：設計並銷售優質遊戲模板
 
 ### 🚀 快速開始
 
@@ -50,31 +69,7 @@ npm install
 cp .env.local.example .env.local
 ```
 
-編輯 `.env.local` 並填入您的 API keys：
-
-```env
-# Gemini API
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
-
-# Firebase
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/fagame?schema=public"
-
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_secret_key
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-```
+編輯 `.env.local` 並填入您的 API keys（詳見 [SETUP.md](SETUP.md)）
 
 4. **設定資料庫**
 ```bash
@@ -124,24 +119,27 @@ fa-game/
 
 1. **配對遊戲** - 圖片、聲音、文字配對
 2. **排序遊戲** - 數字、大小、順序排列  
-3. **故事冒險** - 選擇式互動故事
-4. **創意繪畫** - 繪畫和著色遊戲
+3. **故事冒險** - 選擇式互動故事（開發中）
+4. **創意繪畫** - 繪畫和著色遊戲（開發中）
 
 #### 創建新遊戲
 
-使用語音創建：
+使用改進的語音輸入介面：
+- 直接在文字框輸入描述
+- 或點擊麥克風按鈕語音輸入
+- AI 會自動理解並生成合適的遊戲
+
 ```typescript
-const game = await createGameFromVoice({
-  voiceInput: "我想做一個教孩子認識動物的配對遊戲",
-  ageGroup: "3-5",
-  language: "zh-TW"
-});
+// 範例輸入
+"我想做一個教孩子認識動物的配對遊戲"
+"製作數字 1-10 的排序練習"
+"創建認識顏色的互動遊戲"
 ```
 
 ### 🛠️ 技術架構
 
 - **前端框架**：Next.js 14 + TypeScript
-- **遊戲引擎**：Phaser.js
+- **遊戲引擎**：Phaser.js（未來整合 GDevelop）
 - **AI 服務**：Google Gemini Pro 2.5
 - **樣式**：Tailwind CSS + Radix UI
 - **資料庫**：PostgreSQL + Prisma
@@ -168,39 +166,53 @@ npm test
 # 資料庫管理
 npm run prisma:studio
 npm run prisma:migrate
+
+# 代碼檢查
+npm run lint
 ```
 
 ### 🚀 部署
 
-#### Vercel 部署
+#### Vercel 部署（推薦）
 
 1. Fork 這個 repository
 2. 在 [Vercel](https://vercel.com) 導入專案
 3. 設定環境變數
 4. 部署！
 
-#### 環境變數設定
-
-在 Vercel 儀表板中設定以下環境變數：
-- 所有 `.env.local` 中的變數
-- 將 `NEXTAUTH_URL` 改為您的生產 URL
+詳細步驟請參考 [SETUP.md](SETUP.md)
 
 ### 📱 功能列表
 
-- [x] 語音輸入轉遊戲
+#### 已完成 ✅
+- [x] 改進的語音輸入介面
 - [x] 基礎遊戲模板（配對、排序）
 - [x] 使用者認證（Google OAuth）
 - [x] 遊戲分享功能
 - [x] 遊戲列表與搜尋
+- [x] 響應式設計
+
+#### 開發中 🚧
 - [ ] 社群互動功能
 - [ ] 模板市集
 - [ ] 遊戲數據分析
+- [ ] 更多遊戲模板
+
+#### 計劃中 📋
+- [ ] GDevelop 整合
 - [ ] 多語言支援
 - [ ] 手機 App 版本
+- [ ] AI 模型優化
 
 ### 🤝 貢獻指南
 
 歡迎貢獻！請先閱讀 [CONTRIBUTING.md](CONTRIBUTING.md)
+
+我們特別需要：
+- 🎮 遊戲模板開發
+- 🌍 多語言翻譯
+- 🐛 Bug 修復
+- 📖 文檔改進
 
 ### 📄 授權
 
@@ -221,51 +233,12 @@ MIT License - 詳見 [LICENSE](LICENSE)
 
 ### 🚀 Quick Start
 
-#### Requirements
-
-- Node.js 18+
-- npm or yarn
-- PostgreSQL database
-- Gemini API Key
-- Firebase project
-
-#### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/garyyang1001/fa-game.git
-cd fa-game
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up environment variables**
-```bash
-cp .env.local.example .env.local
-```
-
-Edit `.env.local` and add your API keys.
-
-4. **Set up database**
-```bash
-npx prisma generate
-npx prisma migrate dev
-```
-
-5. **Start development server**
-```bash
-npm run dev
-```
-
-Visit http://localhost:3000
+See [SETUP.md](SETUP.md) for detailed setup instructions.
 
 ### 🛠️ Tech Stack
 
 - **Frontend**: Next.js 14 + TypeScript
-- **Game Engine**: Phaser.js
+- **Game Engine**: Phaser.js (GDevelop integration planned)
 - **AI Service**: Google Gemini Pro 2.5
 - **Styling**: Tailwind CSS + Radix UI
 - **Database**: PostgreSQL + Prisma
@@ -280,7 +253,7 @@ MIT License - see [LICENSE](LICENSE)
 
 ---
 
-**Let creativity flow, let love spread** 💝
+**讓每個父母都成為孩子的遊戲設計師！** 🎮👨‍👩‍👧‍👦
 
 <p align="center">
   Made with ❤️ by the FA-Game Team
