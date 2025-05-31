@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 
 interface GameEngineProps {
   gameConfig: any;
@@ -45,7 +45,7 @@ export function GameEngine({ gameConfig, template, width = 800, height = 600 }: 
         physics: {
           default: 'arcade',
           arcade: {
-            gravity: { y: 0 },
+            gravity: { x: 0, y: 0 },
             debug: false,
           },
         },
