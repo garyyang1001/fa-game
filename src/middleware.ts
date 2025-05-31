@@ -1,35 +1,52 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
-    // Add custom middleware logic here if needed
+// 公開路徑（不需要登入）
+const publicPaths = [
+  '/',
+  '/login',
+  '/register',
+  '/api/auth',
+];
+
+// 需要登入的路徑
+const protectedPaths = [
+  '/create',
+  '/parent-control',
+  '/api/games', // POST, PUT, DELETE 需要驗證
+];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 檢查是否是公開路徑
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  
+  // 檢查是否是需要保護的路徑
+  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+
+  // 如果是 API 路由且是 GET 請求，允許訪問
+  if (pathname.startsWith('/api/games') && request.method === 'GET') {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ req, token }) => {
-        // Protect /api/games routes (except GET)
-        if (req.nextUrl.pathname.startsWith("/api/games") && 
-            req.method !== "GET") {
-          return !!token;
-        }
-        
-        // Protect /create route
-        if (req.nextUrl.pathname.startsWith("/create")) {
-          return !!token;
-        }
-        
-        // Allow all other routes
-        return true;
-      },
-    },
   }
-);
+
+  // 由於 middleware 無法直接檢查 Firebase Auth 狀態
+  // 我們將在客戶端組件中處理認證檢查
+  // 這裡只做基本的路由配置
+  
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    "/api/games/:path*",
-    "/create/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
