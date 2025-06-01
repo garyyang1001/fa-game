@@ -29,20 +29,36 @@
 
 - 🎤 **語音創建**：父母只需說出想法，AI 自動生成遊戲
 - 🤖 **AI 學習助手**：智能提示、個人化鼓勵、適應性難度調整
+- 🎨 **創意映射系統**：將孩子的想像力轉化為獨特的遊戲效果
 - 👨‍👩‍👧‍👦 **家長控制**：完整的 AI 功能控制面板，保護兒童隱私
-- 🎨 **開源遊戲引擎**：基於 Phaser.js，確保流暢體驗
+- 🎮 **多種遊戲模板**：配對、排序、接水果等多種玩法
+- ✨ **即時預覽**：創作過程中即時看到遊戲效果
 - 👥 **社群分享**：與其他父母交流創意
 - 💰 **創意變現**：優質模板可以販售
-- 🎮 **多種遊戲模板**：配對、排序、故事、繪畫等
 
-### ✨ 最新更新 (v2.0)
+### ✨ 最新更新 (v2.1) - MVP 優化版
 
-- 🗄️ **全新資料庫架構**：升級到 Supabase + Prisma，效能提升 300%
-- 🚀 **生產就緒**：完整的部署配置，支援 Vercel 和 Zeabur
-- 🔧 **優化配置**：修正所有已知的部署問題
-- 📦 **依賴更新**：所有套件升級到最新穩定版本
-- 🛡️ **安全強化**：完善的環境變數管理和錯誤處理
-- 🔑 **API 錯誤處理**：改進的 API Key 錯誤提示和處理
+- 🎯 **聚焦 MVP 體驗**：專注於「接水果」遊戲，創造無限變化
+- 🎨 **創意映射系統**：30+ 種預設物品和效果組合
+- 👀 **即時效果預覽**：選擇後立即看到視覺效果
+- 🤖 **AI 理解優化**：專注理解創意，不涉及技術細節
+- 🌈 **豐富的視覺效果**：彩虹色、發光、軌跡等特效
+- 📱 **完美的觸控體驗**：針對手機優化的操作方式
+
+### 🎮 接水果遊戲的無限可能
+
+同一個遊戲框架，因為孩子的創意不同，每個成品都是獨特的：
+
+**小明的創作**：用魔法棒接彩虹色的星星 → 夢幻的魔法遊戲
+**小美的創作**：用擁抱接愛心 → 溫馨的情感表達遊戲  
+**小華的創作**：用籃子接會跳的香蕉 → 歡樂的水果派對
+
+每個選擇都有獨特效果：
+- 🍎 蘋果：正常掉落，接到時有咬一口的音效
+- ⭐ 星星：之字形飄落，接到時整個畫面會閃閃發光
+- ❤️ 愛心：溫柔地飄落，接到時畫面充滿愛心
+- 🪄 魔法棒：點擊可以瞬間移動
+- 🤗 擁抱：有吸引力，東西會自動靠近
 
 ### 🚀 快速開始
 
@@ -118,22 +134,28 @@ fa-game/
 │   │   └── login/             # 登入頁面
 │   ├── components/            # React 組件
 │   │   ├── ai/               # AI 助手組件
+│   │   ├── creation/         # 🆕 創作流程組件
+│   │   │   └── live-preview.tsx # 🆕 即時預覽
 │   │   ├── ui/               # UI 基礎組件
 │   │   └── ...               # 業務組件
 │   ├── lib/                  # 核心配置
-│   │   ├── prisma.ts         # 🆕 Prisma 客戶端
-│   │   ├── supabase.ts       # 🆕 Supabase 客戶端
-│   │   ├── gemini.ts         # Gemini AI 整合
-│   │   ├── gemini-error-handler.ts # 🆕 API 錯誤處理
+│   │   ├── prisma.ts         # Prisma 客戶端
+│   │   ├── supabase.ts       # Supabase 客戶端
+│   │   ├── gemini.ts         # 🆕 增強的 Gemini AI 整合
+│   │   ├── game-mappings.ts  # 🆕 創意映射系統
+│   │   ├── gemini-error-handler.ts # API 錯誤處理
 │   │   └── auth-server.ts    # 認證服務
 │   ├── services/             # API 服務
 │   ├── hooks/                # 自定義 Hooks
-│   ├── game-templates/       # 遊戲模板（AI 增強）
+│   ├── game-templates/       # 遊戲模板
+│   │   ├── catch-game.ts     # 🆕 接水果遊戲模板
+│   │   ├── matching-game.ts  # 配對遊戲
+│   │   └── sorting-game.ts   # 排序遊戲
 │   └── types/                # TypeScript 類型
 ├── prisma/                   # 資料庫架構
 │   └── schema.prisma
-├── API_KEY_SETUP.md          # 🆕 API Key 設置指南
-├── DEPLOYMENT_GUIDE.md       # 🆕 完整部署指南
+├── API_KEY_SETUP.md          # API Key 設置指南
+├── DEPLOYMENT_GUIDE.md       # 完整部署指南
 └── tests/                    # 測試檔案
 ```
 
@@ -181,6 +203,9 @@ npm test
 #### 已完成 ✅
 - [x] 改進的語音輸入介面
 - [x] 基礎遊戲模板（配對、排序）
+- [x] **🆕 接水果遊戲模板**
+- [x] **🆕 創意映射系統**
+- [x] **🆕 即時效果預覽**
 - [x] 使用者認證（Google OAuth）
 - [x] 遊戲分享功能
 - [x] 遊戲列表與搜尋
@@ -189,10 +214,10 @@ npm test
 - [x] **家長控制面板**
 - [x] **智能提示與個人化鼓勵**
 - [x] **隱私保護機制**
-- [x] **🆕 Supabase 整合**
-- [x] **🆕 生產就緒部署**
-- [x] **🆕 完整錯誤處理**
-- [x] **🆕 API Key 錯誤提示**
+- [x] **Supabase 整合**
+- [x] **生產就緒部署**
+- [x] **完整錯誤處理**
+- [x] **API Key 錯誤提示**
 
 #### 開發中 🚧
 - [ ] 社群互動功能
@@ -251,12 +276,13 @@ MIT License - 詳見 [LICENSE](LICENSE)
 
 - 🎤 **Voice Creation**: Parents just speak their ideas, AI generates games
 - 🤖 **AI Learning Assistant**: Smart hints, personalized encouragement, adaptive difficulty
+- 🎨 **Creative Mapping System**: Transform children's imagination into unique game effects
 - 👨‍👩‍👧‍👦 **Parent Control**: Complete AI control panel with privacy protection
 - 🗄️ **Modern Database**: Powered by Supabase + Prisma for optimal performance
-- 🎨 **Open Source Game Engine**: Based on Phaser.js for smooth experience
+- 🎮 **Multiple Game Templates**: Matching, sorting, catch games and more
+- ✨ **Live Preview**: See game effects in real-time during creation
 - 👥 **Community Sharing**: Exchange ideas with other parents
 - 💰 **Monetize Creativity**: Sell quality templates
-- 🎮 **Multiple Game Templates**: Matching, sorting, story, drawing and more
 
 ### 🚀 Quick Start
 
